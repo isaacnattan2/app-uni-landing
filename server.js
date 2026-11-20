@@ -5,21 +5,28 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const publicPath = path.join(__dirname, 'public');
 
-// Set correct MIME types
-express.static.mime.types['css'] = 'text/css; charset=utf-8';
-express.static.mime.types['js'] = 'application/javascript; charset=utf-8';
+const staticOptions = {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css; charset=utf-8');
+        }
+        if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        }
+    }
+};
 
 // Serve static files from public directory
-app.use(express.static(publicPath));
+app.use(express.static(publicPath, staticOptions));
 
 // Serve CSS from src/css
-app.use('/css', express.static(path.join(__dirname, 'src', 'css')));
+app.use('/css', express.static(path.join(__dirname, 'src', 'css'), staticOptions));
 
 // Serve JS from src/js
-app.use('/js', express.static(path.join(__dirname, 'src', 'js')));
+app.use('/js', express.static(path.join(__dirname, 'src', 'js'), staticOptions));
 
 // Serve assets from src/assets
-app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));
+app.use('/assets', express.static(path.join(__dirname, 'src', 'assets'), staticOptions));
 
 // Serve the main landing page
 app.get('/', (req, res) => {
