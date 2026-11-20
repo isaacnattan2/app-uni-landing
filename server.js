@@ -5,12 +5,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const publicPath = path.join(__dirname, 'public');
 
-// Middleware to set correct MIME types
-app.use((req, res, next) => {
-    if (req.url.endsWith('.css')) res.type('text/css');
-    if (req.url.endsWith('.js')) res.type('application/javascript');
-    next();
-});
+// Set correct MIME types
+express.static.mime.types['css'] = 'text/css; charset=utf-8';
+express.static.mime.types['js'] = 'application/javascript; charset=utf-8';
 
 // Serve static files from public directory
 app.use(express.static(publicPath));
