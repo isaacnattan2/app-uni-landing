@@ -38,7 +38,7 @@ app.get('*', (req, res) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`APP UNI Landing Page is running on port ${PORT}`);
     console.log(`Open http://localhost:${PORT} in your browser`);
 });
