@@ -5,6 +5,10 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const publicPath = path.join(__dirname, 'public');
 
+console.log('DEBUG: __dirname =', __dirname);
+console.log('DEBUG: publicPath =', publicPath);
+console.log('DEBUG: index.html exists?', require('fs').existsSync(path.join(publicPath, 'index.html')));
+
 // Middleware to force correct MIME types BEFORE express.static
 app.use((req, res, next) => {
     if (req.path.endsWith('.css')) {
@@ -29,11 +33,13 @@ app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));
 
 // Serve the main landing page
 app.get('/', (req, res) => {
+    console.log('GET / - serving index.html from', path.join(publicPath, 'index.html'));
     res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 // Fallback route
 app.get('*', (req, res) => {
+    console.log('GET * - serving index.html from', path.join(publicPath, 'index.html'));
     res.sendFile(path.join(publicPath, 'index.html'));
 });
 
