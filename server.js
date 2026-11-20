@@ -5,28 +5,27 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const publicPath = path.join(__dirname, 'public');
 
-const staticOptions = {
-    setHeaders: (res, filePath) => {
-        if (filePath.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css; charset=utf-8');
-        }
-        if (filePath.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-        }
+// Middleware to force correct MIME types BEFORE express.static
+app.use((req, res, next) => {
+    if (req.path.endsWith('.css')) {
+        res.type('text/css; charset=utf-8');
+    } else if (req.path.endsWith('.js')) {
+        res.type('application/javascript; charset=utf-8');
     }
-};
+    next();
+});
 
 // Serve static files from public directory
-app.use(express.static(publicPath, staticOptions));
+app.use(express.static(publicPath));
 
 // Serve CSS from src/css
-app.use('/css', express.static(path.join(__dirname, 'src', 'css'), staticOptions));
+app.use('/css', express.static(path.join(__dirname, 'src', 'css'), { type: 'text/css' }));
 
 // Serve JS from src/js
-app.use('/js', express.static(path.join(__dirname, 'src', 'js'), staticOptions));
+app.use('/js', express.static(path.join(__dirname, 'src', 'js'), { type: 'application/javascript' }));
 
 // Serve assets from src/assets
-app.use('/assets', express.static(path.join(__dirname, 'src', 'assets'), staticOptions));
+app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));
 
 // Serve the main landing page
 app.get('/', (req, res) => {
