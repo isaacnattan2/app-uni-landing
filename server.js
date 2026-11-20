@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 
 const PORT = process.env.PORT || 3000;
@@ -7,9 +8,9 @@ const publicPath = path.join(__dirname, 'public');
 
 console.log('DEBUG: __dirname =', __dirname);
 console.log('DEBUG: publicPath =', publicPath);
-console.log('DEBUG: index.html exists?', require('fs').existsSync(path.join(publicPath, 'index.html')));
+console.log('DEBUG: index.html exists?', fs.existsSync(path.join(publicPath, 'index.html')));
 
-// Middleware to force correct MIME types BEFORE express.static
+// Middleware to force correct MIME types
 app.use((req, res, next) => {
     if (req.path.endsWith('.css')) {
         res.type('text/css; charset=utf-8');
@@ -20,7 +21,10 @@ app.use((req, res, next) => {
 });
 
 // Serve static files from public directory
-app.use(express.static(publicPath));
+app.use(express.static(publicPath, { 
+    index: false,  // Disable default index.html serving to use our custom routing
+    etag: false 
+}));
 
 // Serve CSS from src/css
 app.use('/css', express.static(path.join(__dirname, 'src', 'css'), { type: 'text/css' }));
@@ -33,14 +37,24 @@ app.use('/assets', express.static(path.join(__dirname, 'src', 'assets')));
 
 // Serve the main landing page
 app.get('/', (req, res) => {
-    console.log('GET / - serving index.html from', path.join(publicPath, 'index.html'));
-    res.sendFile(path.join(publicPath, 'index.html'));
+    const indexPath = path.join(publicPath, 'index.html');
+    console.log('GET / - serving index.html from', indexPath);
+    if (!fs.existsSync(indexPath)) {
+        console.error('ERROR: index.html not found at', indexPath);
+        return res.status(500).send('index.html not found');
+    }
+    res.sendFile(indexPath);
 });
 
-// Fallback route
+// Fallback route - serve index.html for all other routes
 app.get('*', (req, res) => {
-    console.log('GET * - serving index.html from', path.join(publicPath, 'index.html'));
-    res.sendFile(path.join(publicPath, 'index.html'));
+    const indexPath = path.join(publicPath, 'index.html');
+    console.log('GET * (' + req.path + ') - serving index.html from', indexPath);
+    if (!fs.existsSync(indexPath)) {
+        console.error('ERROR: index.html not found at', indexPath);
+        return res.status(500).send('index.html not found');
+    }
+    res.sendFile(indexPath);
 });
 
 // Start the server
